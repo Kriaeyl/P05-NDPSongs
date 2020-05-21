@@ -107,4 +107,21 @@ public class DBHelper extends SQLiteOpenHelper {
         db.close();
         return songs;
     }
+
+    public ArrayList<Song> getSongFromYear(Integer year) {
+        ArrayList<Song> songs = new ArrayList<Song>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        String[] columns= {COLUMN_ID, COLUMN_TITLE, COLUMN_SINGER, COLUMN_YEAR, COLUMN_STARS};
+        String condition = COLUMN_YEAR + "=?";
+        Cursor cursor = db.query(TABLE_SONG, columns, condition, new String[] {year.toString()}, null, null, null, null);
+        if (cursor.moveToFirst()) {
+            do {
+                Song song = new Song(cursor.getInt(0), cursor.getString(1), cursor.getString(2), cursor.getInt(3), cursor.getInt(4));
+                songs.add(song);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        db.close();
+        return songs;
+    }
 }

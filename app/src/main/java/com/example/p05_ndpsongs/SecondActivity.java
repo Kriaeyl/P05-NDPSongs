@@ -6,8 +6,10 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.Spinner;
 
 import java.util.ArrayList;
 
@@ -17,6 +19,9 @@ public class SecondActivity extends AppCompatActivity {
     Button b1;
     ArrayList<Song> songs;
     SongAdapter aa;
+    Spinner spn;
+    ArrayList<Integer> years;
+    ArrayAdapter<Integer> aS;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,6 +30,8 @@ public class SecondActivity extends AppCompatActivity {
 
         lv = findViewById(R.id.lv);
         b1 = findViewById(R.id.button3);
+        spn = findViewById(R.id.spinner);
+        years = new ArrayList<>();
         DBHelper db = new DBHelper(SecondActivity.this);
 
         // Insert a task
@@ -32,6 +39,29 @@ public class SecondActivity extends AppCompatActivity {
         db.close();
         aa = new SongAdapter(this, R.layout.row, songs);
         lv.setAdapter(aa);
+
+        for (Song i:songs) {
+            if (!years.contains(i.getYear()))
+            years.add(i.getYear());
+        }
+        aS = new ArrayAdapter<Integer>(this, android.R.layout.simple_spinner_dropdown_item, years);
+        spn.setAdapter(aS);
+
+        spn.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                Integer year = years.get(position);
+                DBHelper db = new DBHelper(SecondActivity.this);
+                songs.clear();
+                songs.addAll(db.getSongFromYear(year));
+                db.close();
+                aa.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
+        });
 
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -63,6 +93,16 @@ public class SecondActivity extends AppCompatActivity {
             songs.addAll(db.getAllSongs());
             db.close();
             aa.notifyDataSetChanged();
+            redoYears();
         }
+    }
+
+    public void redoYears() {
+        years.clear();
+        for (Song i:songs) {
+            if (!years.contains(i.getYear()))
+                years.add(i.getYear());
+        }
+        aS.notifyDataSetChanged();
     }
 }
